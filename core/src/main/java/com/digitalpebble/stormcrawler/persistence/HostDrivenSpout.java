@@ -27,9 +27,7 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
 
     private long lastRefreshTimeHosts = 0;
 
-    // code which gets the URLs should lock on the hosts
-    // to prevent concurrent access
-    protected PriorityQueue<HostInfo> hosts;
+    private PriorityQueue<HostInfo> hosts;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
@@ -40,29 +38,29 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
     }
 
     @Override
-	public void nextTuple() {
-		// check whether the list of hosts should be refreshed
-		boolean needsRefreshing = true;
-		if (lastRefreshTimeHosts != 0) {
-			long difference = System.currentTimeMillis() - lastRefreshTimeHosts;
-			if (difference < frequencyRefreshHosts * 1000) {
-				needsRefreshing = false;
-			}
-		}
-		// needed and not already doing it
-		if (needsRefreshing && !isGettingHosts.get()) {
-			isGettingHosts.set(true);
-			CompletableFuture<PriorityQueue<HostInfo>> futureHosts = refreshHostList();
-			futureHosts.thenAccept(h -> {
-				synchronized (hosts) {
-					lastRefreshTimeHosts = Instant.now().toEpochMilli();
-					hosts = h;
-				}
-			});
-		}
+    public void nextTuple() {
+        // check whether the list of hosts should be refreshed
+        boolean needsRefreshing = true;
+        if (lastRefreshTimeHosts != 0) {
+            long difference = System.currentTimeMillis() - lastRefreshTimeHosts;
+            if (difference < frequencyRefreshHosts * 1000) {
+                needsRefreshing = false;
+            }
+        }
+        // needed and not already doing it
+        if (needsRefreshing && !isGettingHosts.get()) {
+            isGettingHosts.set(true);
+            CompletableFuture<PriorityQueue<HostInfo>> futureHosts = refreshHostList();
+            futureHosts.thenAccept(h -> {
+                synchronized (hosts) {
+                    lastRefreshTimeHosts = Instant.now().toEpochMilli();
+                    hosts = h;
+                }
+            });
+        }
 
-		super.nextTuple();
-	}
+        super.nextTuple();
+    }
 
     protected class HostInfo implements Comparable<HostInfo> {
         private final String value;
@@ -89,6 +87,11 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
             lastQueried = Instant.now();
         }
 
+    }
+
+    /** @return PriorityQueue of HostInfo to be used by populateBuffer() **/
+    protected PriorityQueue<HostInfo> getHosts() {
+        return new PriorityQueue<HostInfo>(hosts);
     }
 
     /** Return a priorityqueue of HostInfo to use within populateBuffer() **/
