@@ -20,9 +20,12 @@ package com.digitalpebble.stormcrawler.elasticsearch.persistence;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
@@ -32,10 +35,10 @@ import org.slf4j.LoggerFactory;
 
 import com.digitalpebble.stormcrawler.Metadata;
 import com.digitalpebble.stormcrawler.elasticsearch.ElasticSearchConnection;
-import com.digitalpebble.stormcrawler.persistence.AbstractQueryingSpout;
+import com.digitalpebble.stormcrawler.persistence.HostDrivenSpout;
 import com.digitalpebble.stormcrawler.util.ConfUtils;
 
-public abstract class AbstractSpout extends AbstractQueryingSpout {
+public abstract class AbstractSpout extends HostDrivenSpout {
 
     private static final Logger LOG = LoggerFactory
             .getLogger(AbstractSpout.class);
@@ -242,6 +245,14 @@ public abstract class AbstractSpout extends AbstractQueryingSpout {
                 client.close();
             } catch (IOException e) {
             }
+    }
+    
+    /**
+     * Returns an empty host list - extending classes should override this 
+     * method in order to use the host lists
+     **/
+    protected CompletableFuture<Queue<HostInfo>> refreshHostList(){
+        return CompletableFuture.supplyAsync(() -> new LinkedList<HostInfo>());
     }
 
 }

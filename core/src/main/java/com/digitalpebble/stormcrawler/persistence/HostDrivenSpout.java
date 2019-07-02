@@ -56,6 +56,7 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
             SpoutOutputCollector collector) {
         frequencyRefreshHosts = ConfUtils.getInt(stormConf,
                 refreshHostsParamName, frequencyRefreshHosts);
+        super.open(stormConf, context, collector);
     }
 
     @Override
