@@ -94,7 +94,7 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
         forceRefreshing = true;
     }
 
-    protected class HostInfo {
+    public class HostInfo {
         private final String value;
         private Optional<Object> payload;
 
@@ -102,7 +102,7 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
             this.value = key;
         }
 
-        protected String getValue() {
+        public String getValue() {
             return this.value;
         }
 
@@ -116,17 +116,14 @@ public abstract class HostDrivenSpout extends AbstractQueryingSpout {
 
     }
 
-    /** @return next HostInfo to be used by populateBuffer() **/
-    protected HostInfo getNextHost() {
-        HostInfo nextHost = hosts.poll();
-        if (nextHost != null)
-            hosts.offer(nextHost);
-        return nextHost;
+    /** @return current list of hosts **/
+    protected HostInfo[] getHosts() {
+        return hosts.toArray(new HostInfo[hosts.size()]);
     }
 
     /**
      * Return a queue of HostInfo to use within populateBuffer(). The HostInfo
-     * objects will be returned by getNextHost in the order in which they were
+     * objects will be returned by getHosts in the order in which they were
      * provided by this method.
      **/
     protected abstract CompletableFuture<Queue<HostInfo>> refreshHostList();
