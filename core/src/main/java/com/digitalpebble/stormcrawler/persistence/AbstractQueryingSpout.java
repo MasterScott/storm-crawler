@@ -262,7 +262,7 @@ public abstract class AbstractQueryingSpout extends BaseRichSpout {
      * sets the marker that we are in a query to false and timeLastQueryReceived
      * to now
      **/
-    protected void markQueryReceivedNow() {
+    protected void markFinishedPopulatingBuffer() {
         isInQuery.set(false);
         timeLastQueryReceived = System.currentTimeMillis();
     }

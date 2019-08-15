@@ -159,7 +159,7 @@ public class CollapsingSpout extends AbstractSpout implements
     @Override
     public void onFailure(Exception e) {
         LOG.error("{} Exception with ES query", logIdprefix, e);
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
 
     @Override
@@ -237,24 +237,6 @@ public class CollapsingSpout extends AbstractSpout implements
         }
 
         // remove lock
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
-
-    private final boolean addHitToBuffer(SearchHit hit) {
-        Map<String, Object> keyValues = hit.getSourceAsMap();
-        String url = (String) keyValues.get("url");
-        // is already being processed - skip it!
-        if (beingProcessed.containsKey(url)) {
-            return false;
-        }
-        if (in_buffer.contains(url)) {
-            return false;
-        }
-        Metadata metadata = fromKeyValues(keyValues);
-        boolean added = buffer.add(new Values(url, metadata));
-        if (added)
-            in_buffer.add(url);
-        return added;
-    }
-
 }

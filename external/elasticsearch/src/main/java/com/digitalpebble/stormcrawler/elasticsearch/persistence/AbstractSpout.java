@@ -29,7 +29,9 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
+import org.apache.storm.tuple.Values;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -255,4 +257,21 @@ public abstract class AbstractSpout extends HostDrivenSpout {
         return CompletableFuture.supplyAsync(() -> new LinkedList<HostInfo>());
     }
 
+    protected final boolean addHitToBuffer(SearchHit hit) {
+        Map<String, Object> keyValues = hit.getSourceAsMap();
+        String url = (String) keyValues.get("url");
+        // is already being processed - skip it!
+        if (beingProcessed.containsKey(url)) {
+            return false;
+        }
+        if (in_buffer.contains(url)) {
+            return false;
+        }
+        Metadata metadata = fromKeyValues(keyValues);
+        boolean added = buffer.add(new Values(url, metadata));
+        if (added)
+            in_buffer.add(url);
+        return added;
+    }
+    
 }

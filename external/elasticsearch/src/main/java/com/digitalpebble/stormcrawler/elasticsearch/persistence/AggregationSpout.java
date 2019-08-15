@@ -178,7 +178,7 @@ public class AggregationSpout extends AbstractSpout implements
     @Override
     public void onFailure(Exception arg0) {
         LOG.error("Exception with ES query", arg0);
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
 
     @Override
@@ -188,7 +188,7 @@ public class AggregationSpout extends AbstractSpout implements
         Aggregations aggregs = response.getAggregations();
 
         if (aggregs == null) {
-            markQueryReceivedNow();
+            markFinishedPopulatingBuffer();
             return;
         }
 
@@ -336,7 +336,7 @@ public class AggregationSpout extends AbstractSpout implements
         }
 
         // remove lock
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
 
 }

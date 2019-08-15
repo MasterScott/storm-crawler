@@ -145,13 +145,13 @@ public class ScrollSpout extends AbstractSpout implements
         }
         scrollId = response.getScrollId();
         // remove lock
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
 
     @Override
     public void onFailure(Exception e) {
         LOG.error("{} Exception with ES query", logIdprefix, e);
-        markQueryReceivedNow();
+        markFinishedPopulatingBuffer();
     }
 
     @Override
